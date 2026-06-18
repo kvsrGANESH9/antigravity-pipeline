@@ -27,6 +27,7 @@ wheels/
 spec/
 pipeline.spec
 pipeline.exe
+antigravity-pipeline-*.zip
 
 # IDE
 .vscode/

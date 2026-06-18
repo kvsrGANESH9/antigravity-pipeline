@@ -41,9 +41,12 @@ pyinstaller --onefile ^
     --hidden-import=tkinter ^
     --hidden-import=cv2 ^
     --hidden-import=PIL ^
+    --hidden-import=fitz ^
+    --hidden-import=PyMuPDF ^
     --collect-all pdf2image ^
     --collect-all scenedetect ^
     --collect-all cv2 ^
+    --collect-all PyMuPDF ^
     main.py
 
 if errorlevel 1 (
