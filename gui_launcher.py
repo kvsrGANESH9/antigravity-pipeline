@@ -156,6 +156,7 @@ class PipelineGUI:
                 slides_dir = self.slides_folder.get()
                 output_dir = self.output_folder.get()
                 reports_dir = self.reports_folder.get()
+                temp_dir = None
                 force = False
                 no_clean_temp = False
             
