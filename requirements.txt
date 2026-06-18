@@ -1,0 +1,9 @@
+opencv-python
+numpy
+PyMuPDF
+scikit-image
+imagehash
+scenedetect
+Pillow
+psutil
+pyinstaller
