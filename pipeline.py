@@ -210,6 +210,7 @@ def main(args=None):
     if args.no_clean_temp:
         config.CLEAN_TEMP_AFTER_SUCCESS = False
 
+    temp_dir_arg = getattr(args, 'temp_dir', None)
     dirs = setup_directories(
         workspace_dir=workspace,
         source_dir=args.pdf_dir,
@@ -217,7 +218,7 @@ def main(args=None):
         slides_dir=args.slides_dir,
         output_dir=args.output_dir,
         reports_dir=args.reports_dir,
-        temp_dir=args.temp_dir
+        temp_dir=temp_dir_arg
     )
     log_path = os.path.join(dirs['reports'], "processing_log.txt")
     report_csv = os.path.join(dirs['reports'], "processing_report.csv")
