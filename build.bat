@@ -20,10 +20,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo Step 1: Installing PyInstaller...
-pip install pyinstaller --quiet
+echo Step 1: Installing Python dependencies...
+python -m pip install --upgrade pip --quiet
+python -m pip install -r requirements.txt --quiet
 if errorlevel 1 (
-    echo ERROR: Failed to install PyInstaller
+    echo ERROR: Failed to install Python dependencies from requirements.txt
     pause
     exit /b 1
 )
@@ -42,11 +43,10 @@ pyinstaller --onefile ^
     --hidden-import=cv2 ^
     --hidden-import=PIL ^
     --hidden-import=fitz ^
-    --hidden-import=PyMuPDF ^
+    --collect-all fitz ^
     --collect-all pdf2image ^
     --collect-all scenedetect ^
     --collect-all cv2 ^
-    --collect-all PyMuPDF ^
     main.py
 
 if errorlevel 1 (
