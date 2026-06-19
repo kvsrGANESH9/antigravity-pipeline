@@ -3,6 +3,7 @@ import os
 import time
 import csv
 import glob
+import re
 import traceback
 import config
 
@@ -109,18 +110,55 @@ def clean_temp_files(course_name, dirs):
             except Exception:
                 pass
 
+def normalize_course_name(name):
+    stem = os.path.splitext(os.path.basename(name))[0]
+    return re.sub(r"[^a-z0-9]+", "", stem.lower())
+
+def find_matching_pdf(source_dir, course_name):
+    exact_path = os.path.join(source_dir, f"{course_name}.pdf")
+    if os.path.exists(exact_path):
+        return exact_path, "EXACT"
+
+    target_key = normalize_course_name(course_name)
+    matches = [
+        pdf_path for pdf_path in glob.glob(os.path.join(source_dir, "*.pdf"))
+        if normalize_course_name(pdf_path) == target_key
+    ]
+
+    if len(matches) == 1:
+        return matches[0], "NORMALIZED"
+
+    if len(matches) > 1:
+        match_names = ", ".join(os.path.basename(path) for path in matches[:5])
+        if len(matches) > 5:
+            match_names += ", ..."
+        raise RuntimeError(f"AMBIGUOUS_PDF_MATCH: {course_name} matched multiple PDFs: {match_names}")
+
+    return None, "MISSING"
+
 def process_course(course_name, video_path, dirs, log_path, report_csv):
     start_time = time.time()
     log_to_file(log_path, f"--- Starting processing for course: {course_name} ---")
     
-    pdf_path = os.path.join(dirs['source'], f"{course_name}.pdf")
+    try:
+        pdf_path, pdf_match_type = find_matching_pdf(dirs['source'], course_name)
+    except RuntimeError as e:
+        elapsed = time.time() - start_time
+        log_to_file(log_path, f"FAILED: {e}")
+        append_to_report(report_csv, course_name, 0, 0, "AMBIGUOUS_PDF_MATCH", 0, 0, "None", "FAILED", elapsed)
+        return "FAILED"
+
     output_video_path = os.path.join(dirs['output'], f"{course_name}_Cleaned.mp4")
     
-    if not os.path.exists(pdf_path):
+    if pdf_path is None:
         elapsed = time.time() - start_time
-        log_to_file(log_path, f"FAILED: Missing PDF source slide file: {pdf_path}")
+        expected_pdf_path = os.path.join(dirs['source'], f"{course_name}.pdf")
+        log_to_file(log_path, f"FAILED: Missing PDF source slide file: {expected_pdf_path}")
         append_to_report(report_csv, course_name, 0, 0, "MISSING_PDF", 0, 0, "None", "FAILED", elapsed)
         return "FAILED"
+
+    if pdf_match_type == "NORMALIZED":
+        log_to_file(log_path, f"Matched PDF by normalized filename: {os.path.basename(pdf_path)}")
         
     try:
         slide_dir = os.path.join(dirs['slides'], course_name)

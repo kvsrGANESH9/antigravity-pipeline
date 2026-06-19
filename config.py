@@ -9,10 +9,14 @@ and extracted at runtime under sys._MEIPASS.
 """
 
 # Centralized Configuration Settings
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-BIN_DIR = os.path.join(BASE_DIR, "bin")
 if getattr(sys, "frozen", False):
-    BIN_DIR = os.path.join(sys._MEIPASS, "bin")
+    BASE_DIR = os.path.dirname(sys.executable)
+    BUNDLE_DIR = sys._MEIPASS
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    BUNDLE_DIR = BASE_DIR
+
+BIN_DIR = os.path.join(BUNDLE_DIR, "bin")
 
 STRICT_MODE = True
 PIPELINE_VERSION = "visual-align-v2"

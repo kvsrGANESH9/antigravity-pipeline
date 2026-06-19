@@ -20,8 +20,8 @@ class PipelineGUI:
         self.root.geometry("700x900")
         self.root.configure(bg='#f0f0f0')
         
-        self.pdf_folder = tk.StringVar(value=config.BASE_DIR)
-        self.video_folder = tk.StringVar(value=config.BASE_DIR)
+        self.pdf_folder = tk.StringVar(value=os.path.join(config.BASE_DIR, "SOURCE"))
+        self.video_folder = tk.StringVar(value=os.path.join(config.BASE_DIR, "VIDEOS"))
         self.slides_folder = tk.StringVar(value=os.path.join(config.BASE_DIR, "SLIDES"))
         self.output_folder = tk.StringVar(value=os.path.join(config.BASE_DIR, "OUTPUT"))
         self.reports_folder = tk.StringVar(value=os.path.join(config.BASE_DIR, "REPORTS"))

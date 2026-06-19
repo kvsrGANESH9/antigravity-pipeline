@@ -2,6 +2,18 @@ import os
 import subprocess
 import config
 
+def run_background_process(cmd, **kwargs):
+    """
+    Runs FFmpeg/FFprobe without opening a visible console window on Windows.
+    """
+    if os.name == "nt":
+        kwargs.setdefault("creationflags", subprocess.CREATE_NO_WINDOW)
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
+        kwargs.setdefault("startupinfo", startupinfo)
+    return subprocess.run(cmd, **kwargs)
+
 def get_media_duration(file_path):
     """
     Retrieves the duration of a media file in seconds using ffprobe.
@@ -17,7 +29,7 @@ def get_media_duration(file_path):
         file_path
     ]
     
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+    result = run_background_process(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
     duration_str = result.stdout.strip()
     return float(duration_str)
 
@@ -38,7 +50,7 @@ def get_stream_duration(file_path, stream_type):
         file_path
     ]
 
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+    result = run_background_process(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
     duration_str = result.stdout.strip()
     if not duration_str or duration_str == "N/A":
         return get_media_duration(file_path)
@@ -62,7 +74,7 @@ def extract_trimmed_audio(video_path, intro_end_time, output_audio_path):
     ]
     
     print(f"Extracting trimmed audio starting at {intro_end_time}s to {output_audio_path}...")
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+    run_background_process(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
 def extract_trimmed_video(video_path, intro_end_time, output_video_path):
     """
@@ -81,7 +93,7 @@ def extract_trimmed_video(video_path, intro_end_time, output_video_path):
     ]
     
     print(f"Extracting trimmed video starting at {intro_end_time}s to {output_video_path}...")
-    subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+    run_background_process(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
 def generate_ffconcat_script(slide_sequence_data, output_script_path, audio_duration=None):
     """
@@ -163,7 +175,7 @@ def compose_final_video(ffconcat_script_path, temp_audio_path, output_video_path
     cmd.append(output_video_path)
     
     print(f"Composing final video to {output_video_path}...")
-    result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    result = run_background_process(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if result.returncode != 0:
         print(f"FFmpeg error:\n{result.stderr}")
         raise RuntimeError(f"FFmpeg composition failed with exit code {result.returncode}")
